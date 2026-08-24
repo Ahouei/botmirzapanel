@@ -15,7 +15,9 @@ from aiogram.client.default import DefaultBotProperties
 
 from . import __version__
 from .bot.handlers import admin as admin_handlers
+from .bot.handlers import admin_flows as admin_flows_handlers
 from .bot.handlers import user as user_handlers
+from .bot.handlers import user_flows as user_flows_handlers
 from .bot.middleware import ChannelLockMiddleware, DbSessionMiddleware
 from .core.logging_setup import setup_logging
 from .core.registry import registry
@@ -39,7 +41,9 @@ def build_dispatcher(sessionmaker, settings) -> Dispatcher:
 
     dp.message.middleware(ChannelLockMiddleware(_lock_channel))
     dp.include_router(admin_handlers.router)
+    dp.include_router(admin_flows_handlers.router)
     dp.include_router(user_handlers.router)
+    dp.include_router(user_flows_handlers.router)
     return dp
 
 
