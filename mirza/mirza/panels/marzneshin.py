@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from mirza.core.registry import register_panel
@@ -55,7 +55,7 @@ class MarzneshinPanel(BasePanel):
             "username": spec.username,
             "data_limit": _bytes(spec.volume_gb) or None,
             "expire_on": (
-                datetime.now(timezone.utc) + timedelta(days=spec.duration_days)
+                datetime.now(UTC) + timedelta(days=spec.duration_days)
             ).isoformat() if spec.duration_days else None,
             "service_ids": [int(spec.inbound_id)] if spec.inbound_id else [],
         }
@@ -89,7 +89,7 @@ class MarzneshinPanel(BasePanel):
         if volume_gb is not None:
             payload["data_limit"] = _bytes(volume_gb) or None
         if isinstance(expires_at, timedelta):
-            expires_at = datetime.now(timezone.utc) + expires_at
+            expires_at = datetime.now(UTC) + expires_at
         if expires_at is not None:
             payload["expire_on"] = expires_at.isoformat()
         if enable is not None:

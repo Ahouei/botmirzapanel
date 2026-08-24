@@ -7,7 +7,12 @@ from datetime import timedelta
 import structlog
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import BufferedInputFile, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import (
+    BufferedInputFile,
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from sqlalchemy import select
 
 from mirza.db.models import BotSetting, Invoice, PanelServer
@@ -235,8 +240,9 @@ async def _panel_for(session, name):
 async def check_join(cb: CallbackQuery, session, user):
     await cb.answer(t("users.channel.confirmed"))
     # re-trigger start menu
-    from .user import main_menu_kb
     from mirza.i18n.translate import t as _t
+
+    from .user import main_menu_kb
 
     await cb.message.answer(_t("users.start", name=cb.from_user.first_name or "", shop="Mirza"), reply_markup=main_menu_kb())
 

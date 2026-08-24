@@ -17,7 +17,6 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from mirza.db.models import (
     Admin,
-    BotSetting,
     Category,
     Discount,
     HelpEntry,
@@ -25,7 +24,6 @@ from mirza.db.models import (
     PanelServer,
     PaymentReport,
     Product,
-    Referral,
     User,
 )
 

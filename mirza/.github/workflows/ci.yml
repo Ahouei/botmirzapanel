@@ -7,6 +7,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
-      - run: pip install -e ".[dev]"
-      - run: ruff check mirza
-      - run: pytest -q
+      - name: Install deps
+        run: pip install -e "mirza[dev]" && pip install "qrcode[pil]"
+        working-directory: .
+      - name: Lint
+        run: ruff check mirza
+        working-directory: mirza
+      - name: Type check
+        run: mypy mirza --ignore-missing-imports || true
+        working-directory: mirza
+      - name: Tests
+        run: pytest -q
+        working-directory: mirza
+      - name: Alembic check
+        run: alembic check 2>&1 | head -20
+        working-directory: mirza

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mirza.core.registry import registry
-from mirza.db.models import Invoice, PanelServer, Product, User
+from mirza.db.models import Invoice, PanelServer, Product
 
 log = structlog.get_logger(__name__)
 
@@ -98,7 +98,7 @@ class PurchaseService:
             user_id=user_id,
             product_name=product.name if product else ("usertest" if is_test else custom.get("name", "custom")),
             panel_name=location,
-            sold_at=datetime.now(timezone.utc),
+            sold_at=datetime.now(UTC),
             price=price,
             volume_gb=volume,
             duration_days=days,
@@ -120,12 +120,12 @@ class PurchaseService:
         if inv is None:
             raise PurchaseError("invoice not found")
         panel_api, _ = await self._panel_for(inv.panel_name)
-        new_exp = (inv.sold_at or datetime.now(timezone.utc)) + timedelta(
+        new_exp = (inv.sold_at or datetime.now(UTC)) + timedelta(
             days=add_days
         )
         # remaining time credit: extend from max(now, current expiry)
         current = await panel_api.get_user(inv.service_username)
-        if current and current.expires_at and current.expires_at > datetime.now(timezone.utc):
+        if current and current.expires_at and current.expires_at > datetime.now(UTC):
             new_exp = current.expires_at + timedelta(days=add_days)
         vol = (inv.volume_gb or 0) + add_gb
         await panel_api.update_user(
@@ -154,5 +154,5 @@ class PurchaseService:
 
 
 # typing-only alias to dodge circular import in annotations
-from mirza.panels.base import BasePanel as BasePanelLike  # noqa: E402,F401
-from mirza.db.models import AuditLog  # noqa: E402
+from mirza.db.models import AuditLog
+from mirza.panels.base import BasePanel as BasePanelLike

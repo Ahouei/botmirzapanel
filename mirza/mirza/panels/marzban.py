@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from mirza.core.registry import register_panel
@@ -20,9 +20,9 @@ def _iso(dt: datetime | timedelta | None) -> int | None:
     if dt is None:
         return None
     if isinstance(dt, timedelta):
-        dt = datetime.now(timezone.utc) + dt
+        dt = datetime.now(UTC) + dt
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     return int(dt.timestamp())
 
 
@@ -154,7 +154,7 @@ class MarzbanPanel(BasePanel):
             username=body.get("username", ""),
             subscription_url=sub or None,
             links=list(body.get("links") or []),
-            expires_at=datetime.fromtimestamp(exp, tz=timezone.utc) if exp else None,
+            expires_at=datetime.fromtimestamp(exp, tz=UTC) if exp else None,
             used_bytes=int(body.get("used_traffic") or 0),
             total_bytes=(int(body["data_limit"]) if body.get("data_limit") else None),
             enabled=body.get("status") == "active",

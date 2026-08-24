@@ -11,9 +11,10 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import pkgutil
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, TypeVar
+from typing import TypeVar
 
 import structlog
 
@@ -105,5 +106,5 @@ class PluginRegistry:
 
 
 registry = PluginRegistry()
-register_panel = lambda name, revision="default": registry.register("panel", name, revision)  # noqa: E731
-register_payment = lambda name, revision="default": registry.register("payment", name, revision)  # noqa: E731
+register_panel = lambda name, revision="default": registry.register("panel", name, revision)
+register_payment = lambda name, revision="default": registry.register("payment", name, revision)

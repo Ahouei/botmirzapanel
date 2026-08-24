@@ -9,8 +9,17 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from sqlalchemy import select
 
-from mirza.db.models import Admin, BotSetting, Category, Discount, GatewaySetting, HelpEntry, Invoice, Product, SaleDiscount, TextOverride, User
-from mirza.i18n.translate import t
+from mirza.db.models import (
+    Admin,
+    BotSetting,
+    Category,
+    Discount,
+    GatewaySetting,
+    HelpEntry,
+    Product,
+    SaleDiscount,
+    TextOverride,
+)
 
 from ..fsm.states import AdminFlows
 from ..middleware import AdminFilter

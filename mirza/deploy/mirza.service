@@ -1,0 +1,17 @@
+[Unit]
+Description=Mirza Bot (Python rewrite)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=mirza
+WorkingDirectory=/opt/mirza
+EnvironmentFile=/opt/mirza/.env
+ExecStartPre=/opt/mirza/.venv/bin/alembic upgrade head
+ExecStart=/opt/mirza/.venv/bin/python -m mirza --webhook
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

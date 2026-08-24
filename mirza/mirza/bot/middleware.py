@@ -3,13 +3,19 @@ from __future__ import annotations
 
 import re
 import secrets
-from typing import Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 import structlog
 from aiogram import BaseMiddleware
 from aiogram.filters import Filter
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message, TelegramObject
-from sqlalchemy import select
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+    TelegramObject,
+)
 
 from mirza.db.models import User
 
@@ -158,6 +164,7 @@ class RulesGateMiddleware(BaseMiddleware):
         session = data.get("session")
         if user and session and not user.rules_accepted:
             from sqlalchemy import select as _select
+
             from mirza.db.models import BotSetting
 
             v = (await session.execute(_select(BotSetting.value).where(BotSetting.key == "require_rules"))).scalar_one_or_none()

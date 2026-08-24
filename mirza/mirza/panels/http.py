@@ -23,11 +23,12 @@ class PanelHTTP:
         json: dict | None = None,
         data: dict | list | None = None,
         params: dict | None = None,
+        auth: tuple[str, str] | None = None,
         expect_json: bool = True,
     ) -> Any:
         try:
             r = await self._client.request(
-                method, path, headers=headers, json=json, data=data, params=params
+                method, path, headers=headers, json=json, data=data, params=params, auth=auth
             )
         except httpx.HTTPError as e:
             raise PanelError(f"connection failed: {e.__class__.__name__}") from e

@@ -18,6 +18,6 @@ def make_sessionmaker(engine) -> async_sessionmaker[AsyncSession]:
 async def init_models(engine) -> None:
     """Dev/boot convenience: create tables from metadata.
     Production path is Alembic (see migrations/)."""
-    from mirza.db.models import Base  # noqa: F401
+    from mirza.db.models import Base
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

@@ -6,7 +6,7 @@ revision="alireza" -> Alireza0 x-ui single-session API (same shape, different pa
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from mirza.core.registry import register_panel
@@ -72,9 +72,9 @@ class _XUIBase(BasePanel):
         expiry = int(client_obj.get("expiryTime") or 0)
         # x-ui uses ms epoch when |value| > 10^12
         exp_dt = (
-            datetime.fromtimestamp(expiry / 1000, tz=timezone.utc)
+            datetime.fromtimestamp(expiry / 1000, tz=UTC)
             if abs(expiry) > 10**12 and expiry != 0
-            else datetime.fromtimestamp(expiry, tz=timezone.utc) if expiry else None
+            else datetime.fromtimestamp(expiry, tz=UTC) if expiry else None
         )
         total = int(client_obj.get("totalGB") or 0) or None
         used = int(client_obj.get("down") or 0) + int(client_obj.get("up") or 0)
@@ -108,7 +108,7 @@ class XUI3Panel(_XUIBase):
             "limitIp": spec.extra.get("limit_ip", 0),
             "totalGB": _bytes(spec.volume_gb),
             "expiryTime": int(
-                (datetime.now(timezone.utc) + timedelta(days=spec.duration_days)).timestamp()
+                (datetime.now(UTC) + timedelta(days=spec.duration_days)).timestamp()
                 * 1000
             )
             if spec.duration_days
@@ -119,7 +119,7 @@ class XUI3Panel(_XUIBase):
         }
         body = await self._call(
             "POST",
-            f"/panel/api/inbounds/addClient",
+            "/panel/api/inbounds/addClient",
             json={"id": int(inbound_id), "settings": f'{{"clients": [{payload_client}]}}'},
         )
         obj = body.get("obj") or {}
@@ -170,7 +170,7 @@ class XUI3Panel(_XUIBase):
         }
         await self._call(
             "POST",
-            "/panel/api/inbounds/updateClient/{}".format(cid),
+            f"/panel/api/inbounds/updateClient/{cid}",
             json={"id": int(inbound_id), "settings": str(payload).replace("'", '"')},
         )
         return await self.get_user(username) or current

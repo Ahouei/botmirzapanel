@@ -8,7 +8,7 @@ Legacy mapping:
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
@@ -45,7 +45,7 @@ async def check_expiry_warnings(session, bot) -> int:
     """Warn users N days before expiry (default 3 and 1)."""
     warned = 0
     warn_days = [int(x.strip()) for x in (await _setting(session, "warn_days", "3,1")).split(",") if x.strip().isdigit()]
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     invs = ((await session.execute(select(Invoice).where(Invoice.status == "active"))).scalars().all())
     for inv in invs:
         if not inv.sold_at or not inv.duration_days:
@@ -103,7 +103,7 @@ async def sync_volumes(session, bot=None) -> dict[str, Any]:
 async def purge_expired(session, bot=None) -> int:
     """After removedayc grace days past expiry, revoke the service."""
     grace = int(await _setting(session, "removedayc", "1"))
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     purged = 0
     invs = ((await session.execute(select(Invoice).where(Invoice.status.in_(["active", "end_of_time", "end_of_volume", "sendedwarn"])))).scalars().all())
     for inv in invs:
@@ -166,7 +166,7 @@ async def probe_panels(session, bot=None) -> dict[str, Any]:
                             admin_id = adm
                         if admin_id:
                             await bot.send_message(admin_id, f"⚠️ Panel {row.name} unreachable: {e}")
-                        session.add(BotSetting(key=key, value=datetime.now(timezone.utc).isoformat()))
+                        session.add(BotSetting(key=key, value=datetime.now(UTC).isoformat()))
                         await session.commit()
                     except Exception:
                         pass

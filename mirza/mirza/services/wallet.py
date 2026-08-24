@@ -1,7 +1,7 @@
 """Wallet service: balance, top-ups, gift codes. (Legacy DirectPayment + Discount.)"""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import structlog
@@ -44,7 +44,7 @@ class WalletService:
         d = (await self.s.execute(select(Discount).where(Discount.code == code))).scalar_one_or_none()
         if d is None:
             return False, "invalid_code"
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if d.expires_at and d.expires_at < now:
             return False, "expired"
         dup = (

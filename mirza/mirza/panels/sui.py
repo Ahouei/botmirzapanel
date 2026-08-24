@@ -1,8 +1,7 @@
 """s-ui (sing-box panel) adapter."""
 from __future__ import annotations
 
-import base64
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Any
 
 from mirza.core.registry import register_panel

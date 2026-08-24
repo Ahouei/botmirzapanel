@@ -9,7 +9,7 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 from sqlalchemy import func, select
 
 from mirza.core.registry import registry
-from mirza.db.models import Admin, Invoice, PanelServer, PaymentReport, Product, User
+from mirza.db.models import Invoice, PanelServer, PaymentReport, User
 from mirza.i18n.translate import t
 
 from ..fsm.states import AdminFlows

@@ -5,7 +5,14 @@ import structlog
 from aiogram import F, Router
 from aiogram.filters import CommandObject, CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    Message,
+    ReplyKeyboardMarkup,
+)
 from sqlalchemy import select
 
 from mirza.bot.middleware import is_valid_phone
@@ -183,8 +190,9 @@ async def confirm_invoice(cb: CallbackQuery, session, user):
     if not p:
         return await cb.answer("not found", show_alert=True)
     # apply referral tier discount if any
-    from mirza.db.models import SaleDiscount
     from sqlalchemy import select as _sel
+
+    from mirza.db.models import SaleDiscount
 
     ref_cnt = user.referral_count or 0
     disc = (await session.execute(_sel(SaleDiscount).where(SaleDiscount.min_referrals <= ref_cnt).order_by(SaleDiscount.min_referrals.desc()))).scalars().first()
@@ -375,6 +383,7 @@ async def topup_gateway(cb: CallbackQuery, state: FSMContext, session, user, set
         await state.set_state(TopUpFlow.card_receipt)
         # fetch card info from gateway_settings
         from sqlalchemy import select as _sel
+
         from mirza.db.models import GatewaySetting
         card_no = (await session.execute(_sel(GatewaySetting.value).where(GatewaySetting.gateway == "card", GatewaySetting.key == "card_number"))).scalar_one_or_none() or "—"
         card_holder = (await session.execute(_sel(GatewaySetting.value).where(GatewaySetting.gateway == "card", GatewaySetting.key == "card_holder"))).scalar_one_or_none() or ""
@@ -396,7 +405,7 @@ async def topup_gateway(cb: CallbackQuery, state: FSMContext, session, user, set
     if not cfg:
         cfg = {"api_key": settings.web.webhook_secret}  # placeholder to trigger error visibly
     try:
-        from mirza.payments.base import new_order_id, PaymentRequest
+        from mirza.payments.base import PaymentRequest, new_order_id
 
         order = new_order_id()
         gw = cls(config=cfg)
@@ -427,6 +436,7 @@ async def card_receipt_photo(message: Message, state: FSMContext, session, user,
     file_id = message.photo[-1].file_id
     # store file_id in report meta
     from sqlalchemy import select as _sel
+
     from mirza.db.models import PaymentReport
     rep = (await session.execute(_sel(PaymentReport).where(PaymentReport.order_id == order))).scalar_one_or_none()
     if rep:

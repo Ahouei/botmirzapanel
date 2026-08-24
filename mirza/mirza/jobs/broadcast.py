@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import structlog
@@ -27,7 +27,7 @@ async def enqueue(session: AsyncSession, message_obj: dict[str, Any], user_ids: 
     if existing:
         await session.delete(existing)
         await session.flush()
-    payload = {"message": message_obj, "ids": user_ids, "sent": 0, "failed": 0, "created": datetime.now(timezone.utc).isoformat()}
+    payload = {"message": message_obj, "ids": user_ids, "sent": 0, "failed": 0, "created": datetime.now(UTC).isoformat()}
     session.add(BotSetting(key="broadcast_queue", value=json.dumps(payload, ensure_ascii=False)))
     await session.commit()
     return len(user_ids)

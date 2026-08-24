@@ -18,7 +18,13 @@ from .bot.handlers import admin as admin_handlers
 from .bot.handlers import admin_flows as admin_flows_handlers
 from .bot.handlers import user as user_handlers
 from .bot.handlers import user_flows as user_flows_handlers
-from .bot.middleware import BlockCheckMiddleware, ChannelLockMiddleware, DbSessionMiddleware, RulesGateMiddleware, SettingsMiddleware
+from .bot.middleware import (
+    BlockCheckMiddleware,
+    ChannelLockMiddleware,
+    DbSessionMiddleware,
+    RulesGateMiddleware,
+    SettingsMiddleware,
+)
 from .core.logging_setup import setup_logging
 from .core.registry import registry
 from .core.settings import get_settings
