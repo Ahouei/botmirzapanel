@@ -10,19 +10,21 @@ _current = "fa"
 
 
 def load(locale: str) -> None:
+    global _current
     if locale not in _CATALOGS:
         _CATALOGS[locale] = import_module(f"mirza.i18n.locales.{locale}").MESSAGES
-    _current = locale  # noqa
+    _current = locale
 
 
 def set_locale(locale: str) -> None:
-    global _current
     load(locale)
-    _current = locale
 
 
 def t(key: str, /, **fmt) -> str:
     """Dot-path lookup with {format} interpolation; falls back to key."""
+    # lazy-load default locale if nothing loaded yet
+    if _current not in _CATALOGS:
+        load(_current)
     cat = _CATALOGS.get(_current) or {}
     val: Any = cat
     for part in key.split("."):
@@ -33,4 +35,7 @@ def t(key: str, /, **fmt) -> str:
             break
     if val is None:
         return key
-    return str(val).format(**fmt) if fmt else str(val)
+    try:
+        return str(val).format(**fmt) if fmt else str(val)
+    except (KeyError, IndexError, ValueError):
+        return str(val)
