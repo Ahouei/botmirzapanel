@@ -1,0 +1,1 @@
+"""VPN panel adapters (plugins)."""
