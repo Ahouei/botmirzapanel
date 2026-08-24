@@ -109,7 +109,58 @@ def build_app(settings, sessionmaker, scheduler=None) -> web.Application:
     app.router.add_get("/healthz", healthz)
     app.router.add_get("/readyz", ready)
     app.router.add_get("/health", healthz)
+    app.router.add_get("/metrics", metrics)
     app.router.add_post("/payment/{gateway}/back.php", payment_callback)
     app.router.add_post("/payment/{gateway}/callback", payment_callback)
     app.router.add_post("/callback/{gateway}", payment_callback)
     return app
+
+
+async def metrics(request: web.Request) -> web.Response:
+    """Prometheus exposition (no extra deps)."""
+    lines: list[str] = []
+    try:
+        async with request.app["sessionmaker"]() as s:
+            from sqlalchemy import func as _func
+
+            from mirza.db.models import Invoice, PaymentReport, User
+
+            users = (await s.execute(select(_func.count()).select_from(User))).scalar() or 0
+            invoices = (await s.execute(select(_func.count()).select_from(Invoice))).scalar() or 0
+            active = (await s.execute(select(_func.count()).select_from(Invoice).where(Invoice.status == "active"))).scalar() or 0
+            paid = (await s.execute(select(_func.coalesce(_func.sum(PaymentReport.price), 0)).where(PaymentReport.payment_status == "paid"))).scalar() or 0
+            pending_cards = (await s.execute(select(_func.count()).select_from(PaymentReport).where(PaymentReport.gateway == "card", PaymentReport.payment_status == "pending"))).scalar() or 0
+            lines.extend(
+                [
+                    "# HELP mirza_users Total users",
+                    "# TYPE mirza_users gauge",
+                    f"mirza_users {users}",
+                    "# HELP mirza_invoices Total invoices",
+                    "# TYPE mirza_invoices gauge",
+                    f"mirza_invoices {invoices}",
+                    "# HELP mirza_active_invoices Active services",
+                    "# TYPE mirza_active_invoices gauge",
+                    f"mirza_active_invoices {active}",
+                    "# HELP mirza_paid_toman Sum of paid topups (toman)",
+                    "# TYPE mirza_paid_toman gauge",
+                    f"mirza_paid_toman {paid}",
+                    "# HELP mirza_pending_card_receipts Pending card receipts",
+                    "# TYPE mirza_pending_card_receipts gauge",
+                    f"mirza_pending_card_receipts {pending_cards}",
+                    "# HELP mirza_uptime_seconds Bot uptime",
+                    "# TYPE mirza_uptime_seconds gauge",
+                    f"mirza_uptime_seconds {int(time.monotonic() - _started)}",
+                ]
+            )
+            # panel probe gauges (best-effort, no network)
+            try:
+                from mirza.db.models import PanelServer
+
+                panels = (await s.execute(select(_func.count()).select_from(PanelServer))).scalar() or 0
+                enabled = (await s.execute(select(_func.count()).select_from(PanelServer).where(PanelServer.enabled.is_(True)))).scalar() or 0
+                lines.extend([f"mirza_panels {panels}", f"mirza_panels_enabled {enabled}"])
+            except Exception:
+                pass
+    except Exception as e:
+        lines.append(f"# metrics error: {e}")
+    return web.Response(text="\n".join(lines) + "\n", content_type="text/plain; version=0.0.4")
